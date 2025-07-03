@@ -18,7 +18,8 @@ import models.orders as orders
 import utils
 import database
 import schedules
-
+import asyncio
+from src.initadmin import main as initialize_admin
 # First startup
 if not os.path.exists("database.db"):
     tasks = [
@@ -39,7 +40,12 @@ storage = MemoryStorage()
 bot = constants.create_bot(TOKEN)
 # bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=storage)
+async def startup_tasks():
+    await initialize_admin()
 
+if __name__ == "__main__":
+    asyncio.run(startup_tasks())
+    
 
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message) -> None:

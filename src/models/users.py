@@ -158,6 +158,28 @@ class User:
 async def get_users() -> list[User]:
     return [User(*user_id) for user_id in await database.fetch("SELECT id FROM users")]
 
+# In src/models/users.py
+
+async def get_user_by_id(user_id: int) -> User | None:
+    """
+    Fetches a single user from the database by their ID.
+    This version correctly calls the custom database.fetch(query, *args) function.
+    """
+    # Use a '?' as the placeholder, which is standard for positional args.
+    query = "SELECT * FROM users WHERE id = ?"
+
+    # --- THE FIX ---
+    # Call fetch by passing the arguments directly after the query.
+    # The *args in your fetch function will automatically wrap user_id in a tuple.
+    results = await database.fetch(query, user_id)
+
+    if results:
+        # The rest of the logic was already correct.
+        user_row = results[0]
+        return User(**user_row)
+
+    return None
+
 async def does_exist(user_id: int) -> bool:
     return bool(await database.fetch("SELECT id FROM users WHERE id = ?", user_id))
 
