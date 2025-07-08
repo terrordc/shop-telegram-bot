@@ -48,7 +48,7 @@ class UserProfile(StatesGroup):
 class Order(StatesGroup):
     email = State()
     phone_number = State()
-    adress = State()
+    address = State()
     comment = State()
     captcha = State()
     confirmation = State()

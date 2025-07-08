@@ -21,12 +21,13 @@ class Order:
             id INTEGER PRIMARY KEY,
             user_id INTEGER NOT NULL,
             items TEXT NOT NULL,
-            adress TEXT,
+            address TEXT,
             phone_number TEXT,
             email TEXT,
             comment TEXT,
             status INTEGER NOT NULL DEFAULT 0,
             date_created TEXT NOT NULL,
+            tracking_number TEXT,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )"""
 
@@ -61,20 +62,22 @@ class Order:
     async def items(self) -> list["__Item"]:
         return [self.__Item(item) for item in await self.__items_json]
 
+    # in models/orders.py
     class __Item:
-        def __init__(self, item_raw: str) -> None:
-            self.__item_raw = item_raw
+        # The constructor now correctly accepts a dictionary.
+        def __init__(self, item_dict: dict) -> None:
+            # We store the dictionary directly.
+            self.dict = item_dict
         
         def __repr__(self) -> str:
-            return self.__item_raw
+            # For debugging, let's represent it as a string
+            return json.dumps(self.dict)
 
         def __str__(self) -> str:
-            return self.__item_raw
+            return json.dumps(self.dict)
 
-        @property
-        def dict(self) -> dict:
-            return json.loads(self.__item_raw)
-
+        # The 'id', 'amount', 'title', and 'price' properties now
+        # access the stored dictionary directly, without json.loads.
         @property
         def id(self) -> int:
             return int(self.dict["id"])
@@ -88,8 +91,8 @@ class Order:
             return self.dict["title"]
 
         @property
-        def price(self) -> int:
-            return int(self.dict["price"])
+        def price(self) -> float: # Prices can be floats, good practice
+            return float(self.dict["price"])
 
     @property
     async def payment_method_id(self) -> int:
@@ -104,8 +107,8 @@ class Order:
         return int((await self.__items_json)["delivery_price"])
 
     @property
-    async def adress(self) -> str | None:
-        return await self.__query("adress")
+    async def address(self) -> str | None:
+        return await self.__query("address")
 
     @property
     async def phone_number(self) -> str | None:
@@ -131,22 +134,46 @@ class Order:
     @property
     async def date_created(self) -> datetime.datetime:
         return datetime.datetime.strptime(await self.date_created_raw, constants.TIME_FORMAT)
-
+    @property
+    async def tracking_number(self) -> str | None:
+        return await self.__query("tracking_number")
+    async def set_tracking_number(self, value: str) -> None:
+        await self.__update("tracking_number", value)
 
 
 async def get_orders_by_status(status: int) -> list[Order]:
     return [Order(order_id) for order_id in (await database.fetch("SELECT id FROM orders WHERE status = ?", status))]
+# Add this new function to src/models/orders.py
+
+async def get_orders_by_user(user_id: int) -> list[Order]:
+    """Fetches all orders for a given user, sorted by most recent first."""
+    query = "SELECT id FROM orders WHERE user_id = ? ORDER BY id DESC"
+    order_ids = await database.fetch(query, user_id)
+    return [Order(order_id[0]) for order_id in order_ids]
+
+def get_status_text(status_id: int) -> str:
+    """Helper function to convert a status ID to human-readable text."""
+    statuses = {
+        0: constants.language.order_status_new,
+        1: constants.language.order_status_processing,
+        2: constants.language.order_status_shipped,
+        3: constants.language.order_status_delivered,
+        4: constants.language.order_status_cancelled,
+        5: constants.language.order_status_cancellation_requested, # <-- ADD THIS
+    }
+    return statuses.get(status_id, constants.language.order_status_unknown)
 
 async def create(
     user_id: int,
     items_json: str,
     date_created: datetime.datetime | None,
-    adress: str | None = None,
+    address: str | None = None,
     phone_number: str | None = None,
     email: str | None = None,
     comment: str | None = None,
 ) -> Order:
-    await database.fetch("INSERT INTO orders (user_id, items, adress, phone_number, email, comment, date_created) VALUES (?, ?, ?, ?, ?, ?)", user_id, items_json, adress, phone_number, email, comment, date_created)
+    # in models/orders.py
+    await database.fetch("INSERT INTO orders (user_id, items, address, phone_number, email, comment, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)", user_id, items_json, address, phone_number, email, comment, date_created)
     return Order((await database.fetch("SELECT id FROM orders ORDER BY id DESC LIMIT 1"))[0][0])
 
 

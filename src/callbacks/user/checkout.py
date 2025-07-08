@@ -18,7 +18,7 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
         await states.Order.phone_number.set()
     elif checkout_settings["address"]:
         text = constants.language.input_address
-        await states.Order.adress.set()
+        await states.Order.address.set()
     elif checkout_settings["captcha"]:
         text = constants.language.input_captcha
         markup = [(constants.language.refresh, f'{{"r":"user"}}refresh')] + markup

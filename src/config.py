@@ -56,7 +56,7 @@ class Config:
                     "enabled": False,
                 },
                 "checkout": {
-                    "adress": True,
+                    "address": True,
                     "phone": True,
                     "email": True,
                     "captcha": True,

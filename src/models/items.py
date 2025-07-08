@@ -117,3 +117,9 @@ async def create(
     await database.fetch("INSERT INTO items VALUES (NULL, ?, ?, ?, ?, ?, ?)", name, description, category_id, price, image_id, 0)
     return Item((await database.fetch("SELECT id FROM items ORDER BY id DESC LIMIT 1"))[0][0])
 
+async def get_all_visible_items() -> list[Item]:
+    """Fetches all items that are not hidden, sorted by ID."""
+    query = "SELECT id FROM items WHERE is_hidden = 0 ORDER BY id"
+    item_ids = await database.fetch(query)
+    return [Item(item_id[0]) for item_id in item_ids]
+

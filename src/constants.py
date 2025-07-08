@@ -10,7 +10,7 @@ if not os.path.exists("config.json"):
     
 import localization.ru as language
 # language = importlib.import_module(f"localization.{config['settings']['language']}")
-
+ALL_ITEMS_IMAGE_PATH = "images/all_items_header.jpg"
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 STATUS_DICT = {
     0: language.status_processing,

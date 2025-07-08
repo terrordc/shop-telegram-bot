@@ -37,22 +37,29 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
             (constants.language.plus, changeCart_callback(item_id, 1))
         )]
 
-    payment_method, delivery_id = await asyncio.gather(
-        user.cart.payment_method,
-        user.cart.delivery_id
-    )
-    changePaymentMethod_callback = f"{constants.JSON_USER}cyclePaymentMethod"
-    markup.append(
-        (constants.language.payment_method, changePaymentMethod_callback) 
-        if not payment_method.id else
-        (payment_method["title"], changePaymentMethod_callback)
-    )
+    # --- SIMPLIFICATION: The section for payment and delivery method buttons is removed. ---
+    # We are now assuming a single, default flow: Telegram Payment and SDEK Delivery.
+    # The buttons to cycle through these options caused errors and are not needed for your use case.
 
-    if constants.config["delivery"]["enabled"]:
-        markup.append((
-            constants.language.format_delivery(constants.config["delivery"]["price"]) if delivery_id else constants.language.self_pickup,
-            f"{constants.JSON_USER}cycleDelivery"
-        ))
+    # payment_method, delivery_id = await asyncio.gather(
+    #     user.cart.payment_method,
+    #     user.cart.delivery_id
+    # )
+    # changePaymentMethod_callback = f"{constants.JSON_USER}cyclePaymentMethod"
+    # markup.append(
+    #     (constants.language.payment_method, changePaymentMethod_callback) 
+    #     if not payment_method.id else
+    #     (payment_method["title"], changePaymentMethod_callback)
+    # )
+
+    # if constants.config["delivery"]["enabled"]:
+    #     markup.append((
+    #         constants.language.format_delivery(constants.config["delivery"]["price"]) if delivery_id else constants.language.self_pickup,
+    #         f"{constants.JSON_USER}cycleDelivery"
+    #     ))
+    
+    # --- END OF SIMPLIFICATION ---
+
     markup.append(
         (constants.language.cart_total_price(total_price, currency), "None")
     )
@@ -74,5 +81,3 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
         text=text,
         reply_markup=markup
     )
-
-

@@ -1,0 +1,38 @@
+{
+  // A name for your development container configuration
+  "name": "Python 3.10 & Docker",
+
+  // --- 1. INSTALL PYTHON 3.10 ---
+  // Use a pre-built Microsoft image that already has Python 3.10.
+  // This is the most efficient way to get a specific Python version.
+  "image": "mcr.microsoft.com/devcontainers/python:0-3.10",
+
+  // --- 2. INSTALL DOCKER & POETRY ---
+  // "features" are reusable installation scripts. This is the modern way to add tools.
+  "features": {
+    // This feature installs the Docker CLI and daemon inside your Codespace.
+    // It's often called "Docker-in-Docker".
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  // --- 3. CREATE .ENV FILE & INSTALL POETRY ---
+  // This command runs *after* the container is created and your repo is cloned.
+  // We use it for project-specific setup.
+  "postCreateCommand": "bash -c 'if [ ! -f .env ]; then echo \"# Add your environment variables here\\nSECRET_KEY=\\\"your_secret_key_here\\\"\" > .env; fi && pipx install poetry'",
+
+  // --- 4. OPTIONAL BUT RECOMMENDED: CUSTOMIZATIONS ---
+  "customizations": {
+    // Configure VS Code settings inside the Codespace.
+    "vscode": {
+      "settings": {
+        // Tell VS Code where to find the Python interpreter we installed.
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      },
+      // Automatically install useful VS Code extensions.
+      "extensions": [
+        "ms-python.python",       // The official Python extension
+        "ms-azuretools.docker"    // The official Docker extension
+      ]
+    }
+  }
+}
