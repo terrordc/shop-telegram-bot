@@ -20,9 +20,12 @@ class Item:
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             description TEXT NOT NULL,
-            category_id INTEGER NOT NULL,
-            price REAL NOT NULL,
+            composition TEXT,
+            usage TEXT, 
             image_id TEXT,
+            details_image_id TEXT,
+            category_id INTEGER,
+            price REAL NOT NULL,
             is_hidden INTEGER,
             FOREIGN KEY (category_id) REFERENCES categories (id)
         )"""
@@ -38,6 +41,23 @@ class Item:
         return await self.__query("description")
     async def set_description(self, value: str) -> None:
         await self.__update("description", value)
+    @property
+    async def composition(self) -> str | None:
+        return await self.__query("composition")
+    async def set_composition(self, value: str) -> None:
+        await self.__update("composition", value)
+
+    @property
+    async def details_image_id(self) -> str | None:
+        return await self.__query("details_image_id")
+    async def set_details_image_id(self, value: str) -> None:
+        await self.__update("details_image_id", value)
+
+    @property
+    async def usage(self) -> str | None:
+        return await self.__query("usage")
+    async def set_usage(self, value: str) -> None:
+        await self.__update("usage", value)
 
     @property
     async def category_id(self) -> int:

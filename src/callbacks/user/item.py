@@ -1,77 +1,74 @@
-import importlib
+# src/callbacks/user/item.py
+
+import asyncio
 from aiogram import types
 import models
 import constants
 from markups import markups
-import asyncio
-
 
 async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
-        # it means we need to delete that old menu's photo.
+    # 1. Clean up the old menu components.
+    # Delete the text/button part of the "All Items" menu.
+    try:
+        await callback_query.message.delete()
+    except Exception:
+        pass # Ignore if already deleted
+
+    # If the menu's photo ID was passed, delete it.
     if "pmid" in data:
         try:
-            await callback_query.bot.delete_message(
-                chat_id=user.id,
-                message_id=data["pmid"]
-            )
+            await callback_query.bot.delete_message(chat_id=user.id, message_id=data["pmid"])
         except Exception:
-            # Failsafe in case the message is already gone.
-            pass
-        
+            pass # Ignore if already deleted
+
+    # 2. Fetch all data for the item view
     item = models.items.Item(data["iid"])
-    item_text, category, image_id, cart_dict = await asyncio.gather(
-        item.format_text(constants.config["info"]["item_template"], constants.config["settings"]["currency"]),
-        item.category,
+    item_text, image_id, cart_dict = await asyncio.gather(
+        item.format_text(constants.config["info"]["item_template"], constants.config["settings"]["currency_symbol"]),
         item.image_id,
         user.cart.items.dict,
     )
 
+    # 3. Build the keyboard for the item view
     def cart_callback(state: int):
         return f'{{"r":"user","iid":{item.id},"s":{state},"d":"item"}}changeCart'
 
-
-    item_id = str(item.id)
-
-    if item_id in cart_dict:
+    item_id_str = str(item.id)
+    if item_id_str in cart_dict:
         cart_buttons = (
             (constants.language.minus, cart_callback(0)),
-            (cart_dict[item_id], f'None'),
+            (cart_dict[item_id_str], constants.CALLBACK_DO_NOTHING),
             (constants.language.plus, cart_callback(1)),
         )
     else:
-        cart_buttons = (constants.language.add_to_cart, cart_callback(1))
+        cart_buttons = ((constants.language.add_to_cart, cart_callback(1)),)
 
-    del_data = ',"del":"1"'
-    # By default, the back button goes to the 'all_items' menu now
-    back_callback_destination = "all_items"
+    # The "Back" button needs to be simple, as there's nothing to pass forward anymore.
+    back_button = (constants.language.back, f'{{"r":"user"}}all_items')
     
-    # If a specific redirect is provided (e.g., from the cart), use that
-    if "rd" in data:
-        back_callback_destination = data["rd"]
-
-    # Check if a photo message ID was passed from the previous menu
-    photo_id_breadcrumb = f',"pmid":{data["pmid"]}' if "pmid" in data else ""
-
-    back_button = (
-        constants.language.back,
-        # Construct the final callback with all necessary data
-        f'{{"r":"user"{photo_id_breadcrumb}}}{back_callback_destination}'
-    )
-
+    details_button = (constants.language.item_details_button, f'{{"r":"user","iid":{item.id}}}item_details')
+    
     markup = markups.create([
+        [details_button],
         cart_buttons,
-        [back_button] # Wrap in a list to ensure it's a single row
+        [back_button]
     ])
 
+    # 4. Send the new item view
+    target_chat = callback_query.message
+
     if image_id:
-        await callback_query.message.delete()
-        return await callback_query.message.answer_photo(
+        # If the item has an image, send a new photo message.
+        await target_chat.answer_photo(
             photo=image_id,
             caption=item_text,
-            reply_markup=markup
+            reply_markup=markup,
+            parse_mode="HTML"
         )
-    return await callback_query.message.edit_text(
-        text=item_text,
-        reply_markup=markup
-    )
-
+    else:
+        # Otherwise, send a new text message.
+        await target_chat.answer(
+            text=item_text,
+            reply_markup=markup,
+            parse_mode="HTML"
+        )

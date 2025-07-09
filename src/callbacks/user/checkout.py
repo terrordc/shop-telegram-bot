@@ -10,7 +10,10 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
     text = constants.language.unknown_error
     
     markup = [(constants.language.back, f'{{"r":"user","d":"cart"}}cancel')]
-    if checkout_settings["email"]:
+    if checkout_settings.get("full_name", False):
+        text = constants.language.input_full_name
+        await states.Order.full_name.set()
+    elif checkout_settings["email"]:
         text = constants.language.input_email
         await states.Order.email.set()
     elif checkout_settings["phone"]:

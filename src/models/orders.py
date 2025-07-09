@@ -24,6 +24,7 @@ class Order:
             address TEXT,
             phone_number TEXT,
             email TEXT,
+            full_name TEXT,
             comment TEXT,
             status INTEGER NOT NULL DEFAULT 0,
             date_created TEXT NOT NULL,
@@ -34,7 +35,9 @@ class Order:
     @property
     async def user_id(self) -> int:
         return await self.__query("user_id")
-    
+    @property
+    async def full_name(self) -> str | None:
+        return await self.__query("full_name")
     
 
     # items is a json string
@@ -140,10 +143,17 @@ class Order:
     async def set_tracking_number(self, value: str) -> None:
         await self.__update("tracking_number", value)
 
-
 async def get_orders_by_status(status: int) -> list[Order]:
-    return [Order(order_id) for order_id in (await database.fetch("SELECT id FROM orders WHERE status = ?", status))]
-# Add this new function to src/models/orders.py
+    """Fetches all orders with a given status, sorted by most recent first."""
+    query = "SELECT id FROM orders WHERE status = ? ORDER BY id DESC"
+    order_ids = await database.fetch(query, status)
+    return [Order(order_id[0]) for order_id in order_ids]
+
+async def get_orders_count_by_status(status: int) -> int:
+    """Efficiently counts orders with a given status."""
+    query = "SELECT COUNT(id) FROM orders WHERE status = ?"
+    result = await database.fetch(query, status)
+    return result[0][0] if result else 0
 
 async def get_orders_by_user(user_id: int) -> list[Order]:
     """Fetches all orders for a given user, sorted by most recent first."""
@@ -166,14 +176,16 @@ def get_status_text(status_id: int) -> str:
 async def create(
     user_id: int,
     items_json: str,
-    date_created: datetime.datetime | None,
+    date_created: str,
+    full_name: str | None = None, # ADD THIS
     address: str | None = None,
     phone_number: str | None = None,
     email: str | None = None,
     comment: str | None = None,
 ) -> Order:
-    # in models/orders.py
-    await database.fetch("INSERT INTO orders (user_id, items, address, phone_number, email, comment, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)", user_id, items_json, address, phone_number, email, comment, date_created)
+    query = "INSERT INTO orders (user_id, items, date_created, full_name, address, phone_number, email, comment) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    params = (user_id, items_json, date_created, full_name, address, phone_number, email, comment)
+    await database.fetch(query, *params)
     return Order((await database.fetch("SELECT id FROM orders ORDER BY id DESC LIMIT 1"))[0][0])
 
 

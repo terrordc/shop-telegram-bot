@@ -50,7 +50,9 @@ class Markups:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add(types.KeyboardButton(language.catalogue))
         markup.add(types.KeyboardButton(language.cart))
-        markup.add(types.KeyboardButton(language.profile), types.KeyboardButton(language.faq))
+        markup.add(types.KeyboardButton(language.profile))
+        markup.add(types.KeyboardButton(language.faq))
+        markup.add(types.KeyboardButton(language.support))
         return markup
 
 markups = Markups()

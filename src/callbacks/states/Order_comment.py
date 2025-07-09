@@ -30,7 +30,8 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
 
         # 3. Create the final confirmation text
         final_text = constants.language.confirm_order_text.format(
-            phone_number=state_data.get('phone_number', 'Не указан'),
+            full_name=state_data.get('full_name', 'Не указано'),
+            phone_number=state_data.get('phone_number', 'Не указано'),
             address=state_data.get('address', 'Не указан'),
             comment=state_data.get('comment', 'Нет'),
             items_text=items_text,

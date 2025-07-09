@@ -22,24 +22,21 @@ def get_status_text(status_id: int) -> str:
     
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message=None) -> None:
     user_orders = await models.orders.get_orders_by_user(user.id)
 
+    # --- FIX #1: SMART RESPONSE LOGIC ---
+    # Determine the correct object to respond with.
+    target = message if message else callback_query.message
+    
     if not user_orders:
-        return await callback_query.message.edit_text(
-            text=constants.language.no_orders_yet,
-            reply_markup=markups.create([
-                (constants.language.back, f"{constants.JSON_USER}profile")
-            ])
-        )
+        text = constants.language.no_orders_yet
+        # If it's a message, answer. If it's a callback, edit.
+        return await target.answer(text) if message else await target.edit_text(text)
 
-    markup = []
+    markup_list = []
     for order in user_orders:
-        # --- THE FIX IS HERE ---
-        # Get the simple value first, no await needed.
         order_id = order.id
-        
-        # Now, gather only the things that need to be awaited.
         date_created, status = await asyncio.gather(
             order.date_created_raw,
             order.status
@@ -49,13 +46,24 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
         status_text = get_status_text(status)
         button_text = f"Заказ #{order_id} от {date_str} - {status_text}"
         
+        # The 'order_details' handler needs to know where to go back to.
+        # Since 'profile' is gone, we'll remove the back button from the details page
+        # by not providing an 'rd' (redirect) value.
         button_callback = f'{{"r":"user", "oid":{order_id}}}order_details'
         
-        markup.append((button_text, button_callback))
+        markup_list.append((button_text, button_callback))
 
-    markup.append((constants.language.back, f"{constants.JSON_USER}profile"))
+    # --- FIX #2: REMOVE THE BROKEN "BACK" BUTTON ---
+    # Since the user can use the main keyboard, a back button isn't strictly necessary here.
+    # The old button pointed to 'profile', which no longer exists.
+    # markup_list.append((constants.language.back, f"{constants.JSON_USER}profile"))
 
-    await callback_query.message.edit_text(
-        text=constants.language.your_orders,
-        reply_markup=markups.create(markup)
-    )
+    final_markup = markups.create(markup_list)
+    text = constants.language.your_orders
+
+    # Use the smart response logic again
+    if message:
+        await target.answer(text=text, reply_markup=final_markup)
+    else:
+        # If coming from a callback, we can safely edit the message.
+        await target.edit_text(text=text, reply_markup=final_markup)

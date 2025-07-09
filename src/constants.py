@@ -18,7 +18,7 @@ STATUS_DICT = {
     2: language.status_done,
     -1: language.status_cancelled,
 }
-
+CALLBACK_DO_NOTHING = "do_nothing"
 JSON_USER = '{"r": "user"}'
 JSON_MANAGER = '{"r": "manager"}'
 JSON_ADMIN = '{"r": "admin"}'

@@ -45,7 +45,11 @@ class Notification(StatesGroup):
 class UserProfile(StatesGroup):
     id = State()
 
+class AdminOrder(StatesGroup):
+    waiting_for_tracking_number = State()
+    
 class Order(StatesGroup):
+    full_name = State()
     email = State()
     phone_number = State()
     address = State()

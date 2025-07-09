@@ -40,17 +40,23 @@ bot = constants.create_bot(TOKEN)
 # bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=storage)
 
+# @dp.message_handler(content_types=types.ContentType.PHOTO)
+# async def dev_get_photo_id(message: types.Message):
+#     # The last element in the 'photo' array is the highest quality one
+#     file_id = message.photo[-1].file_id
+#     print("--- PHOTO FILE ID RECEIVED ---")
+#     print(file_id)
+#     print("----------------------------")
+#     await message.reply(f"Photo `file_id` received and printed to console:\n\n`{file_id}`", parse_mode="Markdown")
 
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message) -> None:
-    await users.create_if_not_exist(message.chat.id, message.from_user.username)
+    # ... (code to create user) ...
     user = users.User(message.chat.id)
 
     markup = markups.main
     if await user.is_admin:
         markup.add(types.KeyboardButton(constants.language.admin_panel))
-    if await user.is_admin or await user.is_manager:
-        markup.add(types.KeyboardButton(constants.language.orders))
 
     if "sticker.tgs" in os.listdir("."):
         with open("sticker.tgs", "rb") as sticker:
@@ -69,21 +75,38 @@ async def handle_text(message: types.Message) -> None:
     destination = ""
     role = "user"
 
+    # --- START OF MODIFICATION ---
+
+    if message.text == constants.language.faq:
+        faq_url = constants.config["info"]["faq_url"]
+        # Embed the link directly in the text using HTML's <a> tag
+        text = f'Вы можете найти ответы на часто задаваемые вопросы на <a href="{faq_url}">нашей странице FAQ</a>.'
+        # We send the message without any extra buttons
+        return await message.answer(text, parse_mode="HTML", disable_web_page_preview=True)
+
+    if message.text == constants.language.support:
+        support_username = constants.config["info"]["support_username"]
+        # Embed the link directly in the text
+        text = f'Для связи с поддержкой, пожалуйста, напишите нашему менеджеру: @{support_username}'
+        # You can also use an HTML link here for a cleaner look
+        # text = f'Для связи с поддержкой, пожалуйста, <a href="https://t.me/{support_username}">напишите нашему менеджеру</a>.'
+        return await message.answer(text, parse_mode="HTML")
+
+
+    # The existing menu navigation logic remains below
     match message.text:
-        case constants.language.catalogue: # This string is now "Все товары"
-            destination = "all_items" # We point it to our new handler
+        case constants.language.catalogue:
+            destination = "all_items"
         case constants.language.cart:
             destination = "cart"
         case constants.language.profile:
-            destination = "profile"
-        case constants.language.faq:
-            destination = "faq"
+            destination = "orders"
+        # We no longer need a 'faq' case here since it's handled above
         case constants.language.admin_panel:
             destination = "adminPanel"
             role = "admin"
-        case constants.language.orders:
-            destination = "orders"
-            role = "manager"
+
+
 
     if not destination:
         await message.answer(constants.language.unknown_command)
@@ -93,22 +116,23 @@ async def handle_text(message: types.Message) -> None:
     match role:
         case "admin":
             permission = await user.is_admin
-        case "manager":
-            permission = await user.is_manager or await user.is_admin
     if not permission:
         return await utils.sendNoPermission(message)
 
     await importlib.import_module(f"callbacks.{role}.{destination}").execute(None, user, None, message)
 
 @dp.callback_query_handler()
-async def process_callback(callback_query: types.CallbackQuery) -> None:
+async def process_callback(callback_query: types.CallbackQuery, state: FSMContext) -> None: 
     call = callback_query.data
-    if call == "None": return
+    # Change "None" to our new constant
+    if call == constants.CALLBACK_DO_NOTHING:
+        return await callback_query.answer() # It's good practice to answer the callback so the loading icon disappears
+
 
     user = users.User(callback_query.message.chat.id)
     data = json.loads(call[:call.index("}")+1])
     call = call[call.index("}")+1:]
-    execute_args = (callback_query, user, data)
+    execute_args = (callback_query, user, data, state)
 
     if config["settings"]["debug"]:
         print(f"{call} | [{user.id}] | {data}")
@@ -123,8 +147,7 @@ async def process_callback(callback_query: types.CallbackQuery) -> None:
     match data["r"]:
         case "admin":
             permission = await user.is_admin
-        case "manager":
-            permission = await user.is_manager or await user.is_admin
+
     if not permission:
         return await utils.sendNoPermission(callback_query.message)
 
@@ -145,7 +168,9 @@ def parse_state(current_state: State) -> str:
 @dp.callback_query_handler(state="*")
 async def process_callback_state(callback_query: types.CallbackQuery, state: FSMContext) -> None:
     call = callback_query.data
-    if call == "None": return
+    # Add the same check here
+    if call == constants.CALLBACK_DO_NOTHING:
+        return await callback_query.answer()
 
     user = users.User(callback_query.message.chat.id)
     data = json.loads(call[:call.index("}")+1])

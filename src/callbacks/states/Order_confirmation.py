@@ -36,19 +36,20 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
         })
     items_json = json.dumps(items_for_db)
     
-    # 3. Create the order in your database
     new_order = await models.orders.create(
         user_id=user.id,
         items_json=items_json,
         date_created=datetime.datetime.now().strftime(constants.TIME_FORMAT),
+        full_name=state_data.get("full_name"), # <-- ADD THIS
         address=state_data.get("address"),
         phone_number=state_data.get("phone_number"),
         comment=state_data.get("comment")
     )
 
-    # 4. Send data to the SDEK API and get a tracking number
+    # 4. Send data to the SDEK API
     sdek_payload = {
         "order_id": new_order.id,
+        "customer_name": state_data.get("full_name"), # <-- ADD THIS
         "customer_phone": state_data.get("phone_number"),
         "delivery_address": state_data.get("address"),
         "items": items_for_db,

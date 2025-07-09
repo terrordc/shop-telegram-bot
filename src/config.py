@@ -53,33 +53,36 @@ class Config:
                 },
                 "delivery": {
                     "price": 0,
-                    "enabled": False,
+                    "enabled": True,
                 },
                 "checkout": {
+                    "full_name": True,
                     "address": True,
                     "phone": True,
-                    "email": True,
-                    "captcha": True,
+                    "email": False,
+                    "captcha": False,
                 },
                 "payment_methods": {
                     "cash": {
                         "title": "Наличными",
-                        "enabled": True,
+                        "enabled": False,
                     },
                     "manager": {
                         "title": "Оплата после связи с менеджером",
-                        "enabled": True,
+                        "enabled": False,
                     },
                     "telegram_api": {
                         "title": "Оплата через Telegram",
-                        "enabled": False,
+                        "enabled": True,
                     },
                   },
                 "info": {
                     "greeting": "Приветствуем в нашем магазине!",
                     "contacts": "Телефон: +7 (999) 999-99-99\nАдрес: г. Москва, ул. Ленина, д. 1",
                     "refund_policy": "Политика возврата",
-                    "item_template": "Название: %n\nКатегория: %c\nЦена: %p\n\nОписание: %d",
+                    "faq_url": "https://telegra.ph/CHasto-zadavaemye-voprosy-07-09-3",
+                    "support_username": "buttermilkjesuss",
+                    "item_template": "<b>%n</b>\n\nЦена: %p\n\n%d",
                 },
             }
             json.dump(data, f, indent=2)
