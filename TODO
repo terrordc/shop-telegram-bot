@@ -1,0 +1,3 @@
+replace all Do a search for database.fetch and database.execute.
+Ensure the arguments are being passed as a tuple, not unpacked.
+Update your code to access data by column name (e.g., row['id']) instead of by index (row[0]). This is more robust.

@@ -54,7 +54,7 @@ def cart_total_price(price: float, currency_sym: str) -> str:
 item_management = "📦 Управление товаром"
 no_categories = "Создайте хотя бы одну категорию перед созданием товара!"
 user_management = "🧍 Управление пользователями"
-category_management = "📁 Категории"
+category_management = "Управление категориями"
 stats = "📈 Статистика"
 settings = "⚙ Настройки"
 
@@ -333,3 +333,12 @@ order_details_text = """
 {items_text}
 # ... etc
 """
+confirm_delete_category_cascade = (
+    "‼️ <b>ВНИМАНИЕ: НЕОБРАТИМОЕ ДЕЙСТВИЕ</b> ‼️\n\n"
+    "Вы собираетесь удалить категорию «<b>{category_name}</b>».\n"
+    "Это действие также навсегда удалит:\n"
+    "    - <b>{sub_category_count}</b> вложенных подкатегорий\n"
+    "    - <b>{item_count}</b> товаров в этой категории и всех подкатегориях\n\n"
+    "Вы уверены, что хотите продолжить?"
+)
+category_deleted_successfully = "✅ Категория «{category_name}» и все ее содержимое были успешно удалены."
