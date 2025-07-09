@@ -1,4 +1,5 @@
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import asyncio
 import models
 import constants
@@ -6,7 +7,7 @@ from markups import markups
 import states
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     item = models.items.Item(data["iid"])
 
     item_image, item_category_id, text, is_hidden = await asyncio.gather(

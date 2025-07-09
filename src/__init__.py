@@ -119,7 +119,7 @@ async def handle_text(message: types.Message) -> None:
     if not permission:
         return await utils.sendNoPermission(message)
 
-    await importlib.import_module(f"callbacks.{role}.{destination}").execute(None, user, None, message)
+    await importlib.import_module(f"callbacks.{role}.{destination}").execute(None, user, None, message, None)
 
 @dp.callback_query_handler()
 async def process_callback(callback_query: types.CallbackQuery, state: FSMContext) -> None: 
@@ -132,7 +132,7 @@ async def process_callback(callback_query: types.CallbackQuery, state: FSMContex
     user = users.User(callback_query.message.chat.id)
     data = json.loads(call[:call.index("}")+1])
     call = call[call.index("}")+1:]
-    execute_args = (callback_query, user, data, state)
+    execute_args = (callback_query, user, data, None, state)
 
     if config["settings"]["debug"]:
         print(f"{call} | [{user.id}] | {data}")

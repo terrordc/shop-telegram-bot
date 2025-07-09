@@ -5,7 +5,7 @@ import models
 import constants
 from markups import markups
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, state: FSMContext, message: types.Message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     call = callback_query.data[callback_query.data.index("}")+1:]
     state_data = await state.get_data()
 

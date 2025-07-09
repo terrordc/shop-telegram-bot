@@ -1,12 +1,13 @@
 # src/callbacks/user/cart.py
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 from markups import markups
 import asyncio
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     cart_items_dict = await user.cart.items.dict
     target = message if message else callback_query.message
 

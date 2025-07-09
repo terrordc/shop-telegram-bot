@@ -1,12 +1,13 @@
 # Create this new file: src/callbacks/admin/orders.py
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import asyncio
 import models
 import constants
 from markups import markups
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     # We can count how many orders are in each status to make the buttons more informative
     new_orders_count, cancellation_requests_count = await asyncio.gather(
         models.orders.get_orders_count_by_status(0), # Status 0 for "New"

@@ -1,11 +1,12 @@
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 from markups import markups
 import states
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     if len(await models.categories.get_categories()) > 30:
         await callback_query.message.answer(constants.language.too_many_categories)
         return

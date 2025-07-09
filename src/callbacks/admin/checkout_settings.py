@@ -1,10 +1,11 @@
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 from markups import markups
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     checkout_data = constants.config["checkout"]
     captcha_sym = constants.language.tick if checkout_data["captcha"] else constants.language.cross
     email_sym = constants.language.tick if checkout_data["email"] else constants.language.cross

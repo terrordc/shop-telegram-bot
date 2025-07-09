@@ -7,7 +7,7 @@ from aiogram.dispatcher import FSMContext
 import models
 import constants
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, state: FSMContext) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     # 1. Acknowledge the press and show a loading message to the user
     await callback_query.message.edit_text("⏳ Создаём ваш заказ, пожалуйста, подождите...")
 

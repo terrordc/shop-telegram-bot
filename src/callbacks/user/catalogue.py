@@ -1,4 +1,5 @@
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 from markups import markups
@@ -7,7 +8,7 @@ import asyncio
 import time
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     text = constants.language.catalogue
 
     categories = await models.categories.get_main_categories()

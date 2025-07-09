@@ -1,11 +1,12 @@
 # src/callbacks/user/confirm_cancellation.py
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 from markups import markups
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     order_id = data["oid"]
     
     # Define callbacks for the Yes/No buttons

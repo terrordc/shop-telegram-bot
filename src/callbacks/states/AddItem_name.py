@@ -6,7 +6,7 @@ from markups import markups
 import states
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, state: FSMContext, message: types.Message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     await state.update_data(name=message.text)
 
     await message.answer(

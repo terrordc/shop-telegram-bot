@@ -28,6 +28,7 @@ class Order:
             comment TEXT,
             status INTEGER NOT NULL DEFAULT 0,
             date_created TEXT NOT NULL,
+            date_updated TEXT,
             tracking_number TEXT,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )"""
@@ -38,7 +39,11 @@ class Order:
     @property
     async def full_name(self) -> str | None:
         return await self.__query("full_name")
-    
+    @property
+    async def date_updated_raw(self) -> str | None:
+        return await self.__query("date_updated")
+    async def set_date_updated(self, value: str) -> None:
+        await self.__update("date_updated", value)
 
     # items is a json string
         # items: [

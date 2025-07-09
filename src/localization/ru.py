@@ -288,20 +288,7 @@ order_status_unknown = "Неизвестный статус"
 # Add these to src/localization/ru.py
 
 order_details_title = "📄 Детали заказа #{order_id}"
-order_details_text = """
-<b>Статус:</b> {status_text}
-<b>Дата:</b> {date_created}
-<b>Трек-номер:</b> <code>{tracking_number}</code>
 
-<b>Товары:</b>
-{items_text}
-
-<b>Адрес доставки:</b> {address}
-<b>Телефон:</b> {phone_number}
-<b>Комментарий:</b> {comment}
-
-<b>Итого:</b> {total_price}{currency_symbol}
-"""
 no_tracking_number = "пока не присвоен"
 request_cancellation = "❌ Запросить отмену"
 cancellation_not_possible = "Отмена невозможна, так как заказ уже обрабатывается или отправлен."
@@ -335,4 +322,14 @@ user_notification_shipped = """
 🚚 Ваш заказ #{order_id} был отправлен!
 
 Вы можете отследить его с помощью трек-номера: <code>{tracking_number}</code>
+"""
+date_cancelled_text = "Дата отмены:"
+order_details_text = """
+<b>Статус:</b> {status_text}
+<b>Дата:</b> {date_created}
+{status_specific_info}  # <-- A placeholder for our dynamic text
+
+<b>Товары:</b>
+{items_text}
+# ... etc
 """

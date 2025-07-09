@@ -5,7 +5,7 @@ import constants
 import states
 from markups import markups
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, state: FSMContext, message: types.Message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     markup = [
         (f"[{category.id}] {await category.name}", f'{{"r":"admin","cid":"{category.id}"}}parent_category')
         for category in (await models.categories.get_categories())

@@ -8,7 +8,7 @@ import states
 import re
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, state: FSMContext, message: types.Message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     # FIX 2: Updated regex to accept numbers starting with +7, 8, or 7, followed by 10 digits.
     if not re.match(r"^(?:\+7|8|7)\d{10}$", message.text):
         # FIX 1: Use the correct language key 'input_phone_error' instead of 'invalid_phone_number'.

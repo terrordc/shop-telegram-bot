@@ -1,10 +1,11 @@
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 from markups import markups
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     text = constants.language.admin_panel
     markup = markups.create([
         (constants.language.category_management, f"{constants.JSON_ADMIN}categories"),

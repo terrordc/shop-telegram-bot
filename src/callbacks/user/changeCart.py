@@ -2,47 +2,44 @@
 
 import asyncio
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 from markups import markups
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
+    # --- START OF FIX ---
+    # Define variables from the 'data' dict FIRST.
     item_id = data["iid"]
-    state = data["s"]
+    add_or_remove_state = data["s"] # Renamed 'state' to avoid conflict with FSMContext 'state'
     source_view = data["d"]
 
-    # --- START OF MODIFICATION ---
-    # Get the state of the cart BEFORE we change it
+    # Now we can safely use item_id to check the cart's state
     cart_before = await user.cart.items.dict
-    is_first_add = str(item_id) not in cart_before and state == 1
-    # --- END OF MODIFICATION ---
+    is_first_add = str(item_id) not in cart_before and add_or_remove_state == 1
+    # --- END OF FIX ---
 
     # Update the cart quantity
-    if state == 1:
+    if add_or_remove_state == 1: # Add
         await user.cart.items.add(item_id)
-    else:
+    else: # Remove
         await user.cart.items.remove(item_id)
     
-    # --- START OF MODIFICATION ---
-    # If this was the first time adding the item, show the pop-up notification.
-    # Otherwise, just send a blank answer to stop the loading animation.
+    # Show the pop-up notification if it's the first add
     if is_first_add:
         await callback_query.answer(constants.language.item_added_to_cart)
     else:
         await callback_query.answer()
-    # --- END OF MODIFICATION ---
 
     # Re-fetch the cart data to get the new state
     cart_items_dict = await user.cart.items.dict
 
-    # 3. Rebuild the appropriate markup based on where the click came from
     # --- IF THE UPDATE WAS FROM THE ITEM VIEW ---
     if source_view == "item":
-        # We need to rebuild the item view's keyboard
         item = models.items.Item(item_id)
         
-        def cart_callback(new_state: int):
-            return f'{{"r":"user","iid":{item.id},"s":{new_state},"d":"item"}}changeCart'
+        def cart_callback(new_s: int):
+            return f'{{"r":"user","iid":{item.id},"s":{new_s},"d":"item"}}changeCart'
 
         item_id_str = str(item.id)
 
@@ -53,6 +50,7 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
                 (constants.language.plus, cart_callback(1)),
             )
         else:
+            # Note the extra comma to make it a tuple of tuples for the markup helper
             cart_buttons = ((constants.language.add_to_cart, cart_callback(1)),)
         
         # We need to rebuild the other buttons too
@@ -70,7 +68,5 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
 
     # --- IF THE UPDATE WAS FROM THE CART VIEW ---
     elif source_view == "cart":
-        # We need to rebuild the entire cart view
-        # The simplest way is to re-trigger the cart handler, which already does a smooth edit.
         from . import cart
-        await cart.execute(callback_query, user, data)
+        await cart.execute(callback_query, user, data, message, state)

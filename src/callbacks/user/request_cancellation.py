@@ -1,12 +1,13 @@
 # src/callbacks/user/request_cancellation.py
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 
 # Define the new status ID
 CANCELLATION_REQUESTED_STATUS = 5
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     order_id = data["oid"]
     order = models.orders.Order(order_id)
 

@@ -2,11 +2,12 @@
 
 import asyncio
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 from markups import markups
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     # 1. Clean up any old menu components if coming from a callback.
     if callback_query:
         # Delete the main message (e.g., the item view).

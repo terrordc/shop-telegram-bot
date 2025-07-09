@@ -1,11 +1,12 @@
 import importlib
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 import models
 import constants
 from markups import markups
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     payment_methods = list(map(lambda payment_method: payment_method.id, models.payment_methods.get_enabled_payment_methods()))
     user_payment_method = (await user.cart.payment_method)
 

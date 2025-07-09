@@ -6,7 +6,7 @@ from markups import markups
 import importlib
 
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, state: FSMContext, message: types.Message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     state_data = await state.get_data()
     item = models.items.Item(state_data["item_id"])
 

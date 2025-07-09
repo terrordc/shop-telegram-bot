@@ -9,7 +9,7 @@ import models
 import constants
 from services import sdek_api # Import our dummy API
 
-async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, state: FSMContext, message: types.Message=None) -> None:
+async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     # This handler is triggered when the user presses "Confirm and Pay"
     # The callback_data for this button is 'create_payment'
 
