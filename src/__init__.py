@@ -13,7 +13,6 @@ from config import config
 from markups import markups
 import models.users as users
 import models.items as items
-import models.categories as categories
 import models.orders as orders
 import utils
 import database
@@ -23,7 +22,7 @@ import schedules
 if not os.path.exists("database.db"):
     tasks = [
         database.fetch(object.database_table)
-        for object in [users.User(0), items.Item(0), categories.Category(0), orders.Order(0)]
+        for object in [users.User(0), items.Item(0), orders.Order(0)]
     ]
     asyncio.get_event_loop().run_until_complete(asyncio.gather(*tasks))
 
@@ -52,6 +51,7 @@ dp = Dispatcher(bot, storage=storage)
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message) -> None:
     # ... (code to create user) ...
+    await users.create_if_not_exist(message.chat.id, message.from_user.username)
     user = users.User(message.chat.id)
 
     markup = markups.main
@@ -95,7 +95,7 @@ async def handle_text(message: types.Message) -> None:
 
     # The existing menu navigation logic remains below
     match message.text:
-        case constants.language.catalogue:
+        case constants.language.all_items:
             destination = "all_items"
         case constants.language.cart:
             destination = "cart"

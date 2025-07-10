@@ -8,7 +8,6 @@ from markups import markups
 async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     text = constants.language.admin_panel
     markup = markups.create([
-        (constants.language.category_management, f"{constants.JSON_ADMIN}categories"),
         (constants.language.item_management, f"{constants.JSON_ADMIN}items"),
         (constants.language.user_management, f"{constants.JSON_ADMIN}users"),
         # (constants.language.stats, f"{constants.JSON_ADMIN}stats"),

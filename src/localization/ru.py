@@ -19,7 +19,6 @@ reset = "❌ Сбросить"
 no_permission = "У вас нет прав для выполнения данной команды!"
 unknown_command = "Не могу понять команду :("
 cross = "❌"
-too_many_categories = "Слишком много категорий!"
 unknown_call_stop_state = "Бот ожидает от вас ввода данных, но вы ничего не ввели. Для выхода из режима ввода данных нажмите на кнопку ниже."
 state_cancelled = "Вы отменили операцию."
 unknown_error = "Произошла неизвестная ошибка!"
@@ -52,9 +51,9 @@ def cart_total_price(price: float, currency_sym: str) -> str:
 
 # Admin panel tabs
 item_management = "📦 Управление товаром"
-no_categories = "Создайте хотя бы одну категорию перед созданием товара!"
+
 user_management = "🧍 Управление пользователями"
-category_management = "📁 Категории"
+
 stats = "📈 Статистика"
 settings = "⚙ Настройки"
 
@@ -86,7 +85,6 @@ search = "🔍 Найти"
 add_to_cart = "🛒 Добавить в корзину"
 not_in_stock = "❌ Нет в наличии"
 cart_is_empty = "Корзина пуста."
-category_is_empty = "Категория пуста."
 textpickup = "✅Самовывоз"
 def delivery_on(price): return f"✅ Доставка - {price}руб."
 def delivery_off(price): return f"❌ Доставка - {price}руб."
@@ -100,31 +98,12 @@ def item(item):
     stock = "под заказ" if item.is_custom else f"{item.amount}"
     return f"{item.name}\n{item.price:.2f} руб.\nВ наличии: {stock}\n{item.description}"
 
-# Category management
-add_category = "🛍️ Добавить категорию"
-edit_category = "✏️ Редактировать категорию"
-input_category_name = f"Введите название категории {or_press_back}"
-set_parent_category = f"📁 Выберите родительскую категорию {or_press_skip}"
-category_created = "Категория успешно создана."
-def format_category(category_id, category_name, category_parent_id, category_parent_name):
-    return f"Категория: [{category_id}]{category_name}\nРодительская категория: {f'[{category_parent_id}]{category_parent_name}' if category_parent_id else 'Нет'}"
-edit_parent_category = "📁 Изменить родительскую категорию"
-choose_a_category_to_edit = "Выберите категорию для редактирования:"
-confirm_delete_category = "Вы уверены, что хотите удалить категорию?"
-category_deleted = "Категория успешно удалена."
 
-# Item management
-def format_editItemsCategory_text(category_name: str) -> str:
-    return f"Выберите товар для редактирования в категории {category_name}:"
 add_item = "🗃️ Добавить товар"
 edit_item = "✏️ Редактировать товар"
 
 edit_name = "📋 Изменить название"
 input_item_name = f"Введите название товара {or_press_back}"
-
-choose_category = "📁 Выберите категорию"
-select_item_category = f"📁 Выберите категорию товара {or_press_back}"
-edit_category = "✏️ Изменить категорию"
 
 input_item_description = f"Введите описание товара {or_press_back}"
 edit_description = "📝 Изменить описание"
@@ -137,16 +116,15 @@ send_item_images = f"🖼️ Отправьте изображение това�
 send_item_changed_images = f"🖼️ Отправьте изображение товара {or_press_back}"
 delete_image = "❌ Удалить изображение"
 edit_image = "🖼️ Изменить изображение"
-
+select_item_to_edit= "Выберите товар"
 
 confirm_delete_item = "Вы уверены, что хотите удалить товар?"
 item_was_deleted = "Товар успешно удален."
 change_desc = "📝 Изменить описание"
 change_price = "🏷️ Изменить цену"
-change_item_cat = "🛍️ Изменить категорию"
 change_stock = "📦 Изменить кол-во"
-def format_confirm_item(name: str, description: str, category_id: int, price: float, images: list[str]) -> str:
-    return f"Товар: {name}\nОписание: {description}\nКатегория: {category_id}\nЦена: {price}\nId изображения: {images}\n\nВы уверены, что хотите создать товар?"
+def format_confirm_item(name: str, description: str, price: float, images: list[str]) -> str:
+    return f"Товар: {name}\nОписание: {description}\n\nЦена: {price}\nId изображения: {images}\n\nВы уверены, что хотите создать товар?"
 item_added = "Товар успешно добавлен."
 
 # User management
@@ -300,7 +278,7 @@ confirm_cancellation_prompt = "Вы уверены, что хотите запр
 yes_im_sure = "Да, я уверен"
 no_go_back = "Нет, вернуться"
 track_order_button = "Отследить заказ"
-catalogue = "🛍️ Все товары"  # Change this text
+all_items = "🛍️ Все товары"  # Change this text
 all_items_title = "✨ Все наши товары" # Add this new title
 all_items_caption = "Выберите интересующий вас товар из списка ниже:"
 
@@ -333,3 +311,35 @@ order_details_text = """
 {items_text}
 # ... etc
 """
+
+edit_details = "✍️ Редакт. Детали"
+
+    # Header for the details sub-menu
+    # The {composition} and {usage} will be replaced by the bot
+edit_details_menu = """
+Выберите, что вы хотите изменить:
+
+<b>Состав:</b>
+{composition}
+
+<b>Способ применения:</b>
+{usage}
+"""
+
+    # Buttons within the details sub-menu
+edit_composition = "Изменить Состав"
+edit_usage = "Изменить Способ применения"
+edit_details_image = "🖼️ Изменить Изображение для Деталей"
+
+    # Prompts for when the admin clicks a button
+input_item_composition = "Пожалуйста, отправьте новый текст для 'Состава':"
+input_item_usage = "Пожалуйста, отправьте новый текст для 'Способа применения':"
+send_item_details_image = "Пожалуйста, отправьте новое изображение для детального просмотра."
+    
+    # --- You might also need these if they don't exist ---
+no_items_to_edit = "Нет товаров для редактирования."
+select_item_to_edit = "Выберите товар для редактирования:"
+    
+    # --- For pagination buttons ---
+previous = "◀️ Назад"
+next = "▶️ Вперед"

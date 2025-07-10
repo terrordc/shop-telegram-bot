@@ -1,15 +1,15 @@
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-class AddCategory(StatesGroup):
-    name = State()
-    parent_category = State()
+# class AddCategory(StatesGroup):
+#     name = State()
+#     parent_category = State()
 
-class EditCategory(StatesGroup):
-    category_id = State()
-    main = State()
-    name = State()
-    parent_category = State()
-    delete = State()
+# class EditCategory(StatesGroup):
+#     category_id = State()
+#     main = State()
+#     name = State()
+#     parent_category = State()
+#     delete = State()
 
 class AddItem(StatesGroup):
     name = State()
@@ -28,6 +28,9 @@ class EditItem(StatesGroup):
     price = State()
     image_id = State()
     delete = State()
+    composition = State()
+    usage = State()
+    details_image_id = State()
 
 class Language(StatesGroup):
     language = State()

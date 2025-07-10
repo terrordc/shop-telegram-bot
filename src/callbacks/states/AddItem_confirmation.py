@@ -12,7 +12,6 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
     await models.items.create(
         name=state_data['name'],
         description=state_data['description'],
-        category_id=state_data['category'],
         price=state_data['price'],
         image_id=state_data['image_id'],
     )
