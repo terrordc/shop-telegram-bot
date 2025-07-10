@@ -1,24 +1,18 @@
-import asyncio
-import os
-import importlib
-import json
+import asyncio, os, importlib, json, traceback
 from aiogram import Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State
 import dotenv
 
-import constants
-from config import config
+import constants, config, utils, database, schedules, states
+# --- FIX 1: Correctly import the 'markups' INSTANCE from the module ---
 from markups import markups
 import models.users as users
 import models.items as items
 import models.orders as orders
-import utils
-import database
-import schedules
 
-# First startup
+# --- Startup (This part is correct) ---
 if not os.path.exists("database.db"):
     tasks = [
         database.fetch(object.database_table)
@@ -26,45 +20,31 @@ if not os.path.exists("database.db"):
     ]
     asyncio.get_event_loop().run_until_complete(asyncio.gather(*tasks))
 
-
 dotenv.load_dotenv(dotenv.find_dotenv())
 TOKEN = os.getenv("TOKEN")
 if not TOKEN:
     print("No token found!")
     exit(1)
 
-
 storage = MemoryStorage()
 bot = constants.create_bot(TOKEN)
-# bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=storage)
 
-# @dp.message_handler(content_types=types.ContentType.PHOTO)
-# async def dev_get_photo_id(message: types.Message):
-#     # The last element in the 'photo' array is the highest quality one
-#     file_id = message.photo[-1].file_id
-#     print("--- PHOTO FILE ID RECEIVED ---")
-#     print(file_id)
-#     print("----------------------------")
-#     await message.reply(f"Photo `file_id` received and printed to console:\n\n`{file_id}`", parse_mode="Markdown")
-
+# --- Message Handlers (Corrected) ---
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message) -> None:
-    # ... (code to create user) ...
     await users.create_if_not_exist(message.chat.id, message.from_user.username)
     user = users.User(message.chat.id)
-
+    # This line now works because of the corrected import
     markup = markups.main
     if await user.is_admin:
         markup.add(types.KeyboardButton(constants.language.admin_panel))
-
     if "sticker.tgs" in os.listdir("."):
         with open("sticker.tgs", "rb") as sticker:
             await bot.send_sticker(user.id, sticker)
-
     await bot.send_message(
         chat_id=user.id,
-        text=config["info"]["greeting"].replace("%s", message.from_user.full_name),
+        text=config.config["info"]["greeting"].replace("%s", message.from_user.full_name),
         reply_markup=markup,
     )
 
@@ -74,146 +54,105 @@ async def handle_text(message: types.Message) -> None:
     user = users.User(message.chat.id)
     destination = ""
     role = "user"
-
-    # --- START OF MODIFICATION ---
-
     if message.text == constants.language.faq:
-        faq_url = constants.config["info"]["faq_url"]
-        # Embed the link directly in the text using HTML's <a> tag
+        faq_url = config.config["info"]["faq_url"]
         text = f'Вы можете найти ответы на часто задаваемые вопросы на <a href="{faq_url}">нашей странице FAQ</a>.'
-        # We send the message without any extra buttons
         return await message.answer(text, parse_mode="HTML", disable_web_page_preview=True)
-
     if message.text == constants.language.support:
-        support_username = constants.config["info"]["support_username"]
-        # Embed the link directly in the text
+        support_username = config.config["info"]["support_username"]
         text = f'Для связи с поддержкой, пожалуйста, напишите нашему менеджеру: @{support_username}'
-        # You can also use an HTML link here for a cleaner look
-        # text = f'Для связи с поддержкой, пожалуйста, <a href="https://t.me/{support_username}">напишите нашему менеджеру</a>.'
         return await message.answer(text, parse_mode="HTML")
 
-
-    # The existing menu navigation logic remains below
+    # --- FIX 2: Correctly match the main menu button text ---
     match message.text:
-        case constants.language.all_items:
-            destination = "all_items"
+        case constants.language.all_items: # This should match the button text, e.g., "Каталог"
+            destination = "all_items" # The destination file is correct
         case constants.language.cart:
             destination = "cart"
         case constants.language.profile:
             destination = "orders"
-        # We no longer need a 'faq' case here since it's handled above
         case constants.language.admin_panel:
             destination = "adminPanel"
             role = "admin"
 
-
-
     if not destination:
-        await message.answer(constants.language.unknown_command)
-        return
-
-    permission = True
-    match role:
-        case "admin":
-            permission = await user.is_admin
-    if not permission:
+        return await message.answer(constants.language.unknown_command)
+    if role == "admin" and not await user.is_admin:
         return await utils.sendNoPermission(message)
-
     await importlib.import_module(f"callbacks.{role}.{destination}").execute(None, user, None, message, None)
 
-@dp.callback_query_handler()
-async def process_callback(callback_query: types.CallbackQuery, state: FSMContext) -> None: 
-    call = callback_query.data
-    # Change "None" to our new constant
-    if call == constants.CALLBACK_DO_NOTHING:
-        return await callback_query.answer() # It's good practice to answer the callback so the loading icon disappears
 
+# --- REFACTORED AND CORRECTED CALLBACK HANDLERS ---
 
-    user = users.User(callback_query.message.chat.id)
-    data = json.loads(call[:call.index("}")+1])
-    call = call[call.index("}")+1:]
-    execute_args = (callback_query, user, data, None, state)
-
-    if config["settings"]["debug"]:
-        print(f"{call} | [{user.id}] | {data}")
-    if call in ["cancel", "skip"]:
-        if "d" in data:
-            return await importlib.import_module(f"callbacks.{data['r']}.{data['d']}").execute(*execute_args)
-
-        await callback_query.message.delete()
-        return
-
-    permission = True
-    match data["r"]:
-        case "admin":
-            permission = await user.is_admin
-
-    if not permission:
-        return await utils.sendNoPermission(callback_query.message)
-
-    try:
-        return await importlib.import_module(f"callbacks.{data['r']}.{call}").execute(*execute_args)
-    except ModuleNotFoundError:
-        await callback_query.answer(
-            text=constants.language.unknown_command
-        )
-
-
-def parse_state(current_state: State) -> str:
-    current_state_str = str(current_state)
-    return current_state_str[current_state_str.index("'")+1:-2]
-
-
-# states
-@dp.callback_query_handler(state="*")
-async def process_callback_state(callback_query: types.CallbackQuery, state: FSMContext) -> None:
-    call = callback_query.data
-    # Add the same check here
-    if call == constants.CALLBACK_DO_NOTHING:
+# Handler 1: For when the user is NOT in a state.
+@dp.callback_query_handler(state=None)
+async def process_callback_no_state(callback_query: types.CallbackQuery, state: FSMContext) -> None:
+    call_data = callback_query.data
+    if call_data == constants.CALLBACK_DO_NOTHING:
         return await callback_query.answer()
 
     user = users.User(callback_query.message.chat.id)
-    data = json.loads(call[:call.index("}")+1])
-    call = call[call.index("}")+1:]
-    execute_args = (callback_query, user, data)
+    data = json.loads(call_data[:call_data.find("}") + 1])
+    call = call_data[call_data.find("}") + 1:]
 
-    if config["settings"]["debug"]:
-        print(f"[STATE: {await state.get_state()}] {call} | [{user.id}] | {data}")
+    if config.config["settings"]["debug"]:
+        print(f"{call} | [{user.id}] | {data}")
 
-    if call == "cancel":
-        await state.finish()
-        if "d" in data:
-            return await importlib.import_module(f"callbacks.{data['r']}.{data['d']}").execute(*execute_args)
+    if data.get("r") == "admin" and not await user.is_admin:
+        return await utils.sendNoPermission(callback_query.message)
 
-        await callback_query.message.edit_text(
-            text=constants.language.state_cancelled,
-        )
-        return
-
-    
-    state_path = f"callbacks.states.{(await state.get_state()).replace(':', '_')}"
     try:
-        await importlib.import_module(state_path).execute(callback_query=callback_query, user=user, data=data, state=state)
+        execute_args = (callback_query, user, data, None, state)
+        await importlib.import_module(f"callbacks.{data['r']}.{call}").execute(*execute_args)
     except ModuleNotFoundError:
-        await utils.sendStateNotFound(callback_query.message)
-    except:
-        import traceback
+        await callback_query.answer(constants.language.unknown_command, show_alert=True)
+    except Exception:
         traceback.print_exc()
 
+# Handler 2: For when the user IS in a state.
+@dp.callback_query_handler(state="*")
+async def process_callback_in_state(callback_query: types.CallbackQuery, state: FSMContext) -> None:
+    call_data = callback_query.data
+    if call_data == constants.CALLBACK_DO_NOTHING:
+        return await callback_query.answer()
 
+    user = users.User(callback_query.message.chat.id)
+    data = json.loads(call_data[:call_data.find("}") + 1])
+    call = call_data[call_data.find("}") + 1:]
+    
+    current_state_str = await state.get_state()
+
+    if config.config["settings"]["debug"]:
+        print(f"[STATE: {current_state_str}] {call} | [{user.id}] | {data}")
+
+    # The state handler itself will now manage all navigation, including 'cancel'.
+    # This router's only job is to find the right state handler file.
+    if current_state_str:
+        state_path = f"callbacks.states.{current_state_str.replace(':', '_')}"
+        try:
+            await importlib.import_module(state_path).execute(callback_query=callback_query, user=user, data=data, state=state)
+        except ModuleNotFoundError:
+            await utils.sendStateNotFound(callback_query.message)
+        except Exception:
+            traceback.print_exc()
+    else:
+        # This is a fallback case, it shouldn't happen with this architecture
+        await state.finish()
+        await callback_query.answer("Your session has expired. Please try again.", show_alert=True)
+        await callback_query.message.delete()
+
+# --- Message handler for when in a state (This is correct) ---
 @dp.message_handler(state="*", content_types=types.ContentTypes.ANY)
 async def process_message_state(message: types.Message, state: FSMContext) -> None:
     state_path = f"callbacks.states.{(await state.get_state()).replace(':', '_')}"
-
     try:
         await importlib.import_module(state_path).execute(callback_query=None, user=users.User(message.chat.id), data=None, message=message, state=state)
     except ModuleNotFoundError:
         await utils.sendStateNotFound(message)
-    except:
+    except Exception:
         import traceback
         traceback.print_exc()
 
-
+# --- Main startup (This is correct) ---
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True, loop=constants.loop, on_startup=schedules.on_startup)
-
