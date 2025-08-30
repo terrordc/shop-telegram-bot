@@ -6,7 +6,7 @@ name: Deploy to Production VPS
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
@@ -23,7 +23,7 @@ jobs:
             cd /root/shop-telegram-bot
 
             # Pull the latest changes from the main branch
-            git pull origin main
+            git pull origin master
 
             # Use docker compose to rebuild and restart the bot in the background
             # This is the professional way to deploy the bot
