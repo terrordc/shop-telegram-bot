@@ -308,22 +308,44 @@ async def yookassa_webhook_handler(request: web.Request):
 # APPLICATION STARTUP
 # =================================================================================
 
-if __name__ == "__main__":
+# In src/__init__.py
+# REPLACE your entire block at the bottom with this one.
+
+async def main():
+    """The main entrypoint for the application."""
+
+    # 1. Create database and tables if they don't exist
     if not os.path.exists("database.db"):
-        # This initial setup should run before the bot starts listening
         print("Database not found. Creating tables...")
         tasks = [database.fetch(obj.database_table) for obj in [users.User(0), items.Item(0), orders.Order(0)]]
-        asyncio.run(asyncio.gather(*tasks))
+        # This is the correct way to run multiple tasks inside an async function
+        await asyncio.gather(*tasks)
         print("Database tables created.")
 
+    # 2. Configure the web application
     app = web.Application()
     app.router.add_post(WEBHOOK_PATH_YOOKASSA, yookassa_webhook_handler)
     configure_app(dispatcher=dp, app=app, path='/')
 
+    # 3. Register scheduled tasks
     async def run_scheduled_tasks(app_instance):
         await schedules.on_startup(dp)
 
     app.on_startup.append(run_scheduled_tasks)
     
+    # 4. Run the application
     print("✅ Starting combined server for Telegram and YooKassa...")
-    web.run_app(app, host="0.0.0.0", port=8080)
+    # We need a runner to correctly manage the web app lifecycle
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, host="0.0.0.0", port=8080)
+    await site.start()
+
+    # Keep the application running forever
+    await asyncio.Event().wait()
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Bot stopped manually.")
