@@ -14,7 +14,8 @@ from markups import markups
 import models.users as users
 import models.items as items
 import models.orders as orders
-
+# At the top of src/__init__.py
+from logger import setup_logger
 # --- Bot Initialization ---
 dotenv.load_dotenv(dotenv.find_dotenv())
 TOKEN = os.getenv("TOKEN")
@@ -24,7 +25,7 @@ if not TOKEN:
 storage = MemoryStorage()
 bot = constants.create_bot(TOKEN)
 dp = Dispatcher(bot, storage=storage)
-
+setup_logger(bot)
 WEBHOOK_PATH_YOOKASSA = "/yookassa_webhook/"
 
 # =================================================================================
@@ -347,5 +348,8 @@ async def main():
 if __name__ == "__main__":
     try:
         asyncio.run(main())
-    except KeyboardInterrupt:
-        print("Bot stopped manually.")
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("Bot stopped.")
+    except Exception as e:
+        # This is the final catch-all.
+        logging.critical("Bot failed to start or crashed unexpectedly!", exc_info=True)
