@@ -16,6 +16,7 @@ import models.items as items
 import models.orders as orders
 # At the top of src/__init__.py
 from logger import setup_logger
+import logging
 # --- Bot Initialization ---
 dotenv.load_dotenv(dotenv.find_dotenv())
 TOKEN = os.getenv("TOKEN")
