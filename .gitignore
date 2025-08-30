@@ -13,4 +13,3 @@ logs/
 Dockerfile
 .dockerignore
 payment-methods.json
-src/logger.py
