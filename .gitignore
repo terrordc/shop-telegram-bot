@@ -10,6 +10,6 @@ DOCS/overview.md
 backups/
 logs/
 .env
-
+.env.dev
 .dockerignore
 payment-methods.json
