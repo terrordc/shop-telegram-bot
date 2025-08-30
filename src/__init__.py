@@ -28,7 +28,7 @@ bot = constants.create_bot(TOKEN)
 dp = Dispatcher(bot, storage=storage)
 setup_logger(bot)
 WEBHOOK_PATH_YOOKASSA = "/yookassa_webhook/"
-WEBHOOK_SECRET = "this_is_my_super_secret_and_random_password_123" # <-- ADD THIS
+
 # =================================================================================
 # HANDLERS - ORDER MATTERS! Specific command handlers must come first.
 # =================================================================================
@@ -327,7 +327,7 @@ async def main():
     # 2. Configure the web application
     app = web.Application()
     app.router.add_post(WEBHOOK_PATH_YOOKASSA, yookassa_webhook_handler)
-    configure_app(dispatcher=dp, app=app, path='/', secret_token=WEBHOOK_SECRET)
+    configure_app(dispatcher=dp, app=app, path='/')
 
     # 3. Register scheduled tasks
     async def run_scheduled_tasks(app_instance):
