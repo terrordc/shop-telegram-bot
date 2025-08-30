@@ -10,10 +10,11 @@
   // --- 2. INSTALL DOCKER & POETRY ---
   // "features" are reusable installation scripts. This is the modern way to add tools.
   "features": {
-    // This feature installs the Docker CLI and daemon inside your Codespace.
-    // It's often called "Docker-in-Docker".
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
+  // This feature installs the Docker CLI and daemon inside your Codespace.
+  "ghcr.io/devcontainers/features/docker-in-docker:2": {
+    "moby": false 
+  }
+},
 
   // --- 3. CREATE .ENV FILE & INSTALL POETRY ---
   // This command runs *after* the container is created and your repo is cloned.

@@ -20,6 +20,6 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
         await item.set_image_id(image_id)
 
     data = {"iid": item.id}
-    await importlib.import_module("callbacks.admin.editItem").execute(callback_query, user, data, message=message)
+    await importlib.import_module("callbacks.admin.editItem").execute(callback_query, user, data, message=message, state=state)
 
 

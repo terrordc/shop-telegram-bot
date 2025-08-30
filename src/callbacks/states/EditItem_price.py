@@ -18,6 +18,6 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
     await item.set_price(float(price))
 
     data = {"iid": item.id}
-    await importlib.import_module("callbacks.admin.editItem").execute(None, user, data, message)
+    await importlib.import_module("callbacks.admin.editItem").execute(None, user, data, message, state=state)
 
 

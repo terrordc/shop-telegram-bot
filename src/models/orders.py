@@ -175,21 +175,28 @@ def get_status_text(status_id: int) -> str:
         3: constants.language.order_status_delivered,
         4: constants.language.order_status_cancelled,
         5: constants.language.order_status_cancellation_requested, # <-- ADD THIS
+        6: constants.language.order_status_pending_payment, # <-- ADD THIS LINE
     }
     return statuses.get(status_id, constants.language.order_status_unknown)
+
+# In models/orders.py
+# REPLACE your old create function with this one
 
 async def create(
     user_id: int,
     items_json: str,
     date_created: str,
-    full_name: str | None = None, # ADD THIS
+    full_name: str | None = None,
     address: str | None = None,
     phone_number: str | None = None,
     email: str | None = None,
     comment: str | None = None,
+    status: int = 0  # <-- ADD status as an argument with a default of 0
 ) -> Order:
-    query = "INSERT INTO orders (user_id, items, date_created, full_name, address, phone_number, email, comment) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-    params = (user_id, items_json, date_created, full_name, address, phone_number, email, comment)
+    # Add 'status' to the query
+    query = "INSERT INTO orders (user_id, items, date_created, full_name, address, phone_number, email, comment, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    # Add status to the parameters tuple
+    params = (user_id, items_json, date_created, full_name, address, phone_number, email, comment, status)
     await database.fetch(query, *params)
     return Order((await database.fetch("SELECT id FROM orders ORDER BY id DESC LIMIT 1"))[0][0])
 

@@ -49,7 +49,7 @@ class Config:
                     "language": "ru",
                     "currency": "RUB",
                     "currency_symbol": "₽",
-                    "debug": True,
+                    "debug": False,
                 },
                 "delivery": {
                     "price": 0,
@@ -82,6 +82,7 @@ class Config:
                     "refund_policy": "Политика возврата",
                     "faq_url": "https://telegra.ph/CHasto-zadavaemye-voprosy-07-09-3",
                     "support_username": "buttermilkjesuss",
+                    "sdek_manager_telegram_id": 347242473,
                     "item_template": "<b>%n</b>\n\nЦена: %p\n\n%d",
                 },
             }

@@ -180,7 +180,11 @@ async def create(user_id: int, username: str) -> None:
             "payment": 0
         })
     )
-
+async def get_all_admin_ids() -> list[int]:
+    """Fetches a list of all user IDs that are admins."""
+    admin_ids_tuples = await database.fetch("SELECT id FROM users WHERE is_admin = 1")
+    return [item[0] for item in admin_ids_tuples]
+    
 async def create_if_not_exist(user_id: int, username: str) -> None:
     if not await does_exist(user_id):
         await create(user_id, username)

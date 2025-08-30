@@ -8,10 +8,29 @@ from markups import markups
 import states
 
 async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
-    # 1. Save the full name from the user's message
-    await state.update_data(full_name=message.text)
+    full_name = message.text
+    
+    # --- START OF VALIDATION LOGIC ---
+    name_parts = full_name.split()
+    
+    # Rule: At least 2 words, and each word is at least 2 characters long.
+    is_valid = len(name_parts) >= 2 and all(len(part) >= 2 for part in name_parts)
 
-    # 2. Determine the next step in the flow
+    if not is_valid:
+        # If the name is invalid, send an error and STAY in the current state.
+        await message.answer(
+            "Пожалуйста, введите настоящие имя и фамилию (например: Иван Иванов).",
+            reply_markup=markups.create(
+                [(constants.language.back, f'{{"r":"user","d":"cart"}}cancel')]
+            )
+        )
+        return # Stop processing
+    # --- END OF VALIDATION LOGIC ---
+
+    # 1. If validation passes, save the full name
+    await state.update_data(full_name=full_name)
+
+    # 2. Determine the next step in the flow (this part is correct)
     checkout_settings = constants.config['checkout']
     text = constants.language.unknown_error
 
@@ -21,7 +40,6 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
     elif checkout_settings["address"]:
         text = constants.language.input_address
         await states.Order.address.set()
-    # ... etc., continuing the chain ...
     else:
         text = constants.language.input_comment
         await states.Order.comment.set()
@@ -32,5 +50,5 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
         reply_markup=markups.create([
             (constants.language.back, f'{{"r":"user","d":"cart"}}cancel')
         ]),
-        parse_mode="HTML" # Use HTML for prompts with examples
+        parse_mode="HTML"
     )

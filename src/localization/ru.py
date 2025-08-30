@@ -147,6 +147,7 @@ def confirm_notification(text: str) -> str:
 def notification_sent(done_users: int, total_users: int) -> str:
     return f"Оповещение успешно отправлено {done_users}/{total_users} пользователям."
 orders = "📁 Управление заказами"
+order_status_pending_payment = "⏳ Ожидает оплаты" 
 remove_manager_role = "👨‍💼 Убрать роль менеджера"
 add_manager_role = "👨‍💼 Сделать менеджером"
 remove_admin_role = "🔴 Убрать роль администратора"
@@ -343,3 +344,4 @@ select_item_to_edit = "Выберите товар для редактирова
     # --- For pagination buttons ---
 previous = "◀️ Назад"
 next = "▶️ Вперед"
+send_item_image="Отправьте картинку"

@@ -47,7 +47,8 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
         await callback_query.message.answer_photo(
             photo=item_image,
             caption=text,
-            reply_markup=markup
+            reply_markup=markup,
+            parse_mode="HTML"
         )
     elif item_image:
         # If the item has an image but the current message doesn't, send a new photo message
@@ -56,15 +57,16 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
         await target.answer_photo(
             photo=item_image,
             caption=text,
-            reply_markup=markup
+            reply_markup=markup,
+            parse_mode="HTML"
         )
     else:
         # If no image involved, just edit or send a text message
         target = message or callback_query.message
         try:
             # Try to edit the existing message first
-            await target.edit_text(text=text, reply_markup=markup)
+            await target.edit_text(text=text, reply_markup=markup,parse_mode="HTML")
         except Exception:
             # If editing fails (e.g., message is too old), send a new one
             if callback_query: await callback_query.message.delete()
-            await target.answer(text=text, reply_markup=markup)
+            await target.answer(text=text, reply_markup=markup,parse_mode="HTML")
