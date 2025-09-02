@@ -4,16 +4,17 @@ FROM ubuntu:22.04
 # Set environment variables to prevent interactive prompts during setup
 ENV DEBIAN_FRONTEND=noninteractive
 ENV POETRY_HOME="/opt/poetry"
-ENV POETRY_VERSION=2.1.4
+ENV POETRY_VERSION=1.8.2
 
 # Install system dependencies, including the Python version you need
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommendations \
     python3.10 \
     python3.10-dev \
     python3.10-venv \
     build-essential \
     curl \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
