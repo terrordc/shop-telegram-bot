@@ -1,25 +1,26 @@
-# src/logger.py - UPGRADED WITH A NOISE FILTER
+# src/logger.py - FINAL VERSION WITH ADVANCED EXCEPTION FILTER
 
 import logging
 import traceback
 from aiogram import Bot
+from aiohttp.http_exceptions import BadStatusLine # <-- Import the specific exception
 
-ADMIN_ID = 347242473 # <-- IMPORTANT: Replace with YOUR admin ID
+ADMIN_ID = 347242473 # <-- Make sure this is your correct admin ID
 
-# --- START OF NEW CODE ---
-# This is our custom filter to ignore the harmless BadStatusLine error
-class AiohttpNoiseFilter(logging.Filter):
-    def __init__(self, name: str = "AiohttpNoiseFilter") -> None:
-        super().__init__(name)
-
+# --- THIS IS THE NEW, SMARTER FILTER ---
+class AdvancedAiohttpNoiseFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        # Get the message from the log record
-        message = record.getMessage()
-        # Check if the harmless error strings are in the message
-        if "BadStatusLine" in message or "Invalid method encountered" in message:
-            return False # Returning False drops the message
-        return True # Returning True lets the message pass through
-# --- END OF NEW CODE ---
+        # Check if there is an exception attached to the log record
+        if record.exc_info:
+            # Unpack the exception information
+            exc_type, exc_value, exc_traceback = record.exc_info
+            # Check if the exception is an instance of the specific error we want to ignore
+            if isinstance(exc_value, BadStatusLine):
+                return False # Returning False drops this log record completely.
+        
+        # For all other logs (or logs without exceptions), let them pass.
+        return True
+# --- END OF NEW FILTER ---
 
 
 class TelegramBotHandler(logging.Handler):
@@ -53,15 +54,17 @@ def setup_logger(bot_instance: Bot):
     for handler in logger.handlers[:]:
         logger.removeHandler(handler)
 
-    # --- ADD THE FILTER TO OUR HANDLERS ---
-    noise_filter = AiohttpNoiseFilter()
+    # --- Use the new, advanced filter ---
+    noise_filter = AdvancedAiohttpNoiseFilter()
 
+    # Console Handler (for journalctl and docker logs)
     console_handler = logging.StreamHandler()
     console_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     console_handler.setFormatter(console_formatter)
     console_handler.addFilter(noise_filter) # <-- Apply the filter
     logger.addHandler(console_handler)
 
+    # Telegram Handler (for your private alerts)
     telegram_handler = TelegramBotHandler(bot_instance)
     telegram_formatter = logging.Formatter('%(levelname)s - %(message)s')
     telegram_handler.setFormatter(telegram_formatter)
@@ -69,4 +72,4 @@ def setup_logger(bot_instance: Bot):
     telegram_handler.addFilter(noise_filter) # <-- Apply the filter
     logger.addHandler(telegram_handler)
 
-    print("✅ Logger setup complete. Errors will be sent to the admin.")
+    print("✅ Logger setup complete. Advanced noise filtering is active.")
