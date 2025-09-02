@@ -1,10 +1,9 @@
-# docker-compose.yml
-version: '3.8'
+# docker-compose.yml - CLEANED UP
 services:
   bot:
     build: .
     ports:
       - "8080:8080"
-    env_file:
-      - ./.env.dev # <-- Use the dev file for local development
     restart: unless-stopped
+    volumes:
+      - ./database.db:/app/database.db
