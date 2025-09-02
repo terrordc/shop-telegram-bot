@@ -8,7 +8,7 @@ ENV POETRY_VERSION=1.8.2
 
 # Install system dependencies, including the Python version you need
 RUN apt-get update && \
-    apt-get install -y --no-install-recommendations \
+    apt-get install -y --no-install-recommends \
     python3.10 \
     python3.10-dev \
     python3.10-venv \
