@@ -23,7 +23,7 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
         order_id = int(order_id_str)
         await state.update_data(order_id=order_id)
         await LeaveReview.waiting_for_text.set()
-        await message.answer(f"{constants.language.review_request_text}\n\n{constants.language.review_text_limits}{constants.language.review_state_footer}")
+        await message.answer(f"{constants.language.review_request_text_full}{constants.language.review_state_footer}")
 
     # --- END OF CHANGE ---
     
