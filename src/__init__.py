@@ -56,7 +56,7 @@ async def welcome(message: types.Message):
         reply_markup=markup,
         parse_mode="Markdown"
     )
-@dp.message_handler(commands=["cart", "orders", "profile", "all_items", "faq", "support", "help"])
+@dp.message_handler(commands=["cart", "orders", "profile", "all_items", "faq", "support", "help", "reviews"])
 async def handle_menu_commands(message: types.Message):
     await users.create_if_not_exist(message.chat.id, message.from_user.username)
     user = users.User(message.chat.id)
@@ -90,6 +90,7 @@ async def handle_menu_commands(message: types.Message):
     elif command == "help":
         await message.answer("Здесь будет раздел помощи.")
         return # Stop execution
+
 
     # --- Execution Logic for "view" commands ---
     if not destination:
@@ -165,9 +166,12 @@ async def handle_text(message: types.Message):
             destination = "cart"
         case constants.language.profile:
             destination = "orders"
+        case constants.language.reviews: # <-- ADD THIS CASE
+            destination = "reviews" 
         case constants.language.admin_panel:
             destination = "adminPanel"
             role = "admin"
+            
 
     if not destination:
         return await message.answer(constants.language.unknown_command)

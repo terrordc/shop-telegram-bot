@@ -53,6 +53,7 @@ class Markups:
         markup.add(types.KeyboardButton(language.profile))
         markup.add(types.KeyboardButton(language.faq))
         markup.add(types.KeyboardButton(language.support))
+        markup.add(types.KeyboardButton(language.reviews))
         return markup
 
 markups = Markups()
