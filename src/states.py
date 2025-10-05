@@ -59,7 +59,8 @@ class Order(StatesGroup):
     comment = State()
     captcha = State()
     confirmation = State()
-    
+
 class LeaveReview(StatesGroup):
     waiting_for_input = State()      # The initial state where user sends order ID or review text
+    waiting_for_text = State() 
     waiting_for_rating = State()     # The state where user sends the rating

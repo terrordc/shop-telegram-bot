@@ -9,22 +9,21 @@ from states import LeaveReview
 async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message, state: FSMContext) -> None:
     user_input = message.text
 
-    # Check if input is a valid order ID
+    # Case 1: User sent an Order ID
     if user_input.isdigit():
-        order_id = int(user_input)
-        # Here you might want to add a check if this order actually belongs to the user
-        # For simplicity, we'll trust the user for now.
-        await state.update_data(order_id=order_id)
-        await LeaveReview.next() # Moves to waiting_for_rating
+        # You can add a check here to ensure the order belongs to the user
+        await state.update_data(order_id=int(user_input))
+        # Now move to the state for getting the review TEXT
+        await LeaveReview.waiting_for_text.set()
         await message.answer(f"{constants.language.review_request_text}\n\n{constants.language.review_text_limits}")
-        # After getting order ID, we need the review text, so we set a new state
-        await LeaveReview.waiting_for_rating.set() # Re-using this state name, but it's for text now
 
-    # If it's not a number, treat it as general review text
+    # Case 2: User sent general review text
     else:
         if not (5 <= len(user_input) <= 255):
-            return await message.answer(constants.language.review_invalid_text)
-        
+            await message.answer(constants.language.review_invalid_text)
+            return # Stay in the current state to let the user try again
+
         await state.update_data(order_id=None, review_text=user_input)
+        # Now move to the state for getting the RATING
         await LeaveReview.waiting_for_rating.set()
         await message.answer(constants.language.review_request_rating)
