@@ -1,5 +1,3 @@
-# callbacks/user/reviews.py
-
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 import asyncio
@@ -21,10 +19,10 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
             )
             item_name = items[0].title if items else "Товар"
             
-            # --- START OF CHANGE ---
-            # Format the order ID as a blue, clickable link that sends "/<order_id>"
-            orders_text_list.append(f"Заказ <a href=\"/{order_id}\">{order_id}</a> - {item_name} от {date_created}")
-            # --- END OF CHANGE ---
+            # --- START OF FIX ---
+            # Format the order ID as a clickable command using a <code> tag
+            orders_text_list.append(f"Заказ <code>/{order_id}</code> - {item_name} от {date_created}")
+            # --- END OF FIX ---
     
     orders_text = "\n".join(orders_text_list)
     
@@ -35,5 +33,5 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
 
     await LeaveReview.waiting_for_input.set()
     
-    # --- ADD parse_mode="HTML" TO RENDER THE LINK ---
-    await message.answer(final_text, parse_mode="HTML")
+    # parse_mode="HTML" is still required to render the <code> tag
+    await message.answer(final_text, parse_mode="HTML", disable_web_page_preview=True)
