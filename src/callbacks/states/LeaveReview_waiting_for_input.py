@@ -35,4 +35,4 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
 
         await state.update_data(order_id=None, review_text=user_input)
         await LeaveReview.waiting_for_rating.set()
-        await message.answer(f"{constants.language.review_request_rating}{constants.language.review_state_footer}")
+        await message.answer(f"{constants.language.review_request_text_full}{constants.language.review_state_footer}")
