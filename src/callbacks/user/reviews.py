@@ -1,3 +1,5 @@
+# callbacks/user/reviews.py
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 import asyncio
@@ -20,8 +22,10 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
             item_name = items[0].title if items else "Товар"
             
             # --- START OF FIX ---
-            # Format the order ID as a plain-text command. Telegram will make this blue.
-            orders_text_list.append(f"Заказ /{order_id} - {item_name} от {date_created}")
+            # Format the entire line inside a <code> tag for clean, monospaced formatting.
+            # Only the /<order_id> part will be blue and clickable.
+            order_line = f"Заказ /{order_id} - {item_name} от {date_created}"
+            orders_text_list.append(f"<code>{order_line}</code>")
             # --- END OF FIX ---
     
     orders_text = "\n".join(orders_text_list)
@@ -29,10 +33,20 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
     if not user_orders:
         final_text = f"{constants.language.no_orders_for_review}\n\n{constants.language.review_footer}"
     else:
-        final_text = f"{constants.language.review_header}\n{orders_text}\n{constants.language.review_footer}"
+        # We need to wrap the header and footer text to match the screenshot's style.
+        final_text = (
+            f"❗️ Если вы хотите оставить отзыв о конкретном заказе или товаре - просто в ответном сообщении отправьте цифрами номер этого заказа\n"
+            f"➖➖\n"
+            f"🍕 Список Ваших заказов:\n"
+            f"➖➖\n"
+            f"{orders_text}\n"
+            f"➖➖\n"
+            f"❗️ Если вы хотите отставить просто общий отзыв, можете сразу отправить текст Вашего отзыва в ответном сообщении\n\n"
+            f"Чтобы вернуться в меню и начать сначала нажмите 👉 /start"
+        )
 
+    # Set the initial state for the review process
     await LeaveReview.waiting_for_input.set()
     
-    # --- CRITICAL CHANGE: REMOVE parse_mode="HTML" ---
-    # Send the message as plain text.
-    await message.answer(final_text)
+    # We MUST use parse_mode="HTML" to render the <code> tags.
+    await message.answer(final_text, parse_mode="HTML", disable_web_page_preview=True)
