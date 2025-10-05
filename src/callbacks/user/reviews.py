@@ -1,5 +1,3 @@
-# callbacks/user/reviews.py
-
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 import asyncio
@@ -7,6 +5,7 @@ import models
 import constants
 from states import LeaveReview
 
+# The new, corrected function
 async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message = None, state: FSMContext = None) -> None:
     
     # 1. Get all orders for the user
@@ -16,11 +15,19 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
     orders_text_list = []
     if user_orders:
         for order in user_orders:
-            order_id, date_created, items = await asyncio.gather(
-                order.id,
+            # --- START OF FIX ---
+            
+            # Get the synchronous ID directly. No await needed.
+            order_id = order.id 
+            
+            # Now, gather ONLY the awaitable properties concurrently.
+            date_created, items = await asyncio.gather(
                 order.date_created,
                 order.items
             )
+            
+            # --- END OF FIX ---
+            
             # Just show the name of the first item for simplicity
             item_name = items[0].title if items else "Товар"
             orders_text_list.append(f"Заказ {order_id} - {item_name} от {date_created}")
