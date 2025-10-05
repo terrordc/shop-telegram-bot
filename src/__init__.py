@@ -14,6 +14,7 @@ from markups import markups
 import models.users as users
 import models.items as items
 import models.orders as orders
+import models.reviews as reviews
 # At the top of src/__init__.py
 from logger import setup_logger
 import logging
@@ -323,7 +324,7 @@ async def main():
     # 1. Create database and tables if they don't exist
     if not os.path.exists("database.db"):
         print("Database not found. Creating tables...")
-        tasks = [database.fetch(obj.database_table) for obj in [users.User(0), items.Item(0), orders.Order(0)]]
+        tasks = [database.fetch(obj.database_table) for obj in [users.User(0), items.Item(0), orders.Order(0), reviews.Review(0)]]
         # This is the correct way to run multiple tasks inside an async function
         await asyncio.gather(*tasks)
         print("Database tables created.")
