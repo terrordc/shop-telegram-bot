@@ -21,6 +21,8 @@ async def execute(callback_query: types.CallbackQuery, user: models.users.User, 
             order_id = order.id 
             
             # Now, gather ONLY the awaitable properties concurrently.
+            # I am assuming based on your previous code that order.date_created and order.items are async.
+            # If they are not, you would remove them from gather as well.
             date_created, items = await asyncio.gather(
                 order.date_created,
                 order.items
