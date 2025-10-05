@@ -3,6 +3,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 import models
+import models.reviews
 import constants
 
 async def execute(callback_query: types.CallbackQuery, user: models.users.User, data: dict, message: types.Message, state: FSMContext) -> None:
