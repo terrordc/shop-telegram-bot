@@ -11,5 +11,8 @@ backups/
 logs/
 .env
 .env.dev
+.env.prod
 .dockerignore
 payment-methods.json
+venv/
+database.db.bak
